@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add and Search Student</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            max-width: 300px;
+            margin: auto;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #searchResults {
+            margin-top: 20px;
+            max-width: 400px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body >
+
+<h2>Add Student</h2>
+<form id="studentForm">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required>
+
+    <label for="age">Age:</label>
+    <input type="number" id="age" name="age" required>
+
+    <label for="rollNo">Roll No:</label>
+    <input type="number" id="rollNo" name="rollNo" required>
+
+    <label for="school">School:</label>
+    <input type="text" id="school" name="school" required>
+
+    <button type="submit">Add Student</button>
+</form>
+
+<h2>Search Student</h2>
+<form id="searchForm">
+    <label for="searchName">Enter Student Name:</label>
+    <input type="text" id="searchName" name="searchName" required>
+    <button type="submit">Search</button>
+</form>
+
+<div id="searchResults"></div>
+
+<script>
+    // Handle student form submission
+    document.getElementById('studentForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const studentData = {
+            name: document.getElementById('name').value,
+            age: document.getElementById('age').value,
+            rollNo: document.getElementById('rollNo').value,
+            school: document.getElementById('school').value
+        };
+
+        fetch('/api/students/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(studentData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Success:', data);
+            alert('Student added successfully!');
+            document.getElementById('studentForm').reset();
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('Failed to add student.');
+        });
+    });
+
+    // Handle search form submission
+    document.getElementById('searchForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const searchName = document.getElementById('searchName').value;
+
+        fetch(`/api/students/search?name=${searchName}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const resultsDiv = document.getElementById('searchResults');
+            resultsDiv.innerHTML = ''; // Clear previous results
+
+            if (data.length === 0) {
+                resultsDiv.innerHTML = '<p>No student found.</p>';
+            } else {
+                data.forEach(student => {
+                    resultsDiv.innerHTML += `<p>ID: ${student.id}, Name: ${student.name}, Age: ${student.age}, Roll No: ${student.rollNo}, School: ${student.school}</p>`;
+                });
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('Failed to retrieve student data.');
+        });
+    });
+</script>
+
+</body>
+</html>
